@@ -3,9 +3,13 @@
 import { redirect } from "next/navigation";
 import { safeNextPath } from "@/lib/auth";
 import { getSiteUrl } from "@/lib/site-url";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signInWithGoogle(formData: FormData) {
+  // Belum ada .env.local: kasih pesan yang jelas, jangan crash.
+  if (!isSupabaseConfigured()) redirect("/masuk?error=belum-setup");
+
   const next = safeNextPath(formData.get("next")?.toString());
   const supabase = await createClient();
   const siteUrl = await getSiteUrl();

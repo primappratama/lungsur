@@ -12,6 +12,8 @@ const ERRORS: Record<string, string> = {
   callback: "Login-nya nggak selesai. Coba masuk lagi.",
   profil: "Akun kamu gagal disiapin. Coba lagi, atau kabarin kami kalau masih gagal.",
   diblokir: "Akun ini lagi diblokir karena laporan pelanggaran.",
+  "belum-setup":
+    "Login belum aktif karena Supabase belum disambungin. Isi file .env.local dulu, langkahnya ada di README.",
 };
 
 export default function SignInPage({ searchParams }: PageProps<"/masuk">) {
