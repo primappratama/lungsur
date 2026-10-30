@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/*
+ * Token warna, font, dan sudut diambil dari design system lungsur.
+ * Nama token sama dengan di tokens.json, jadi kelasnya kebaca:
+ * bg-kertas, text-tinta, bg-stiker, border-garis-tegas, dst.
+ */
+@theme {
+  --color-kertas: #f6f1e7;
+  --color-kertas-terang: #fffcf6;
+  --color-kardus: #e8dcc6;
+  --color-garis: #d8cbb3;
+  --color-garis-tegas: #8f826e;
+  --color-tinta: #1f1b16;
+  --color-tinta-pudar: #675e53;
+  --color-stiker: #e4572e;
+  --color-stiker-tua: #b23e1c;
+  --color-denim: #33547f;
+  --color-denim-muda: #dce5f0;
+  --color-galat: #b3261e;
+
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-kertas);
+    color: var(--color-tinta);
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-tinta);
+    outline-offset: 2px;
+  }
+}
