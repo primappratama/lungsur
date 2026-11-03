@@ -6,15 +6,18 @@ export function SearchForm({
   category,
   className = "",
   autoFocus,
+  inputId = "cari-q",
 }: {
   defaultValue?: string;
   category?: string;
   className?: string;
   autoFocus?: boolean;
+  /** Wajib beda kalau ada lebih dari satu kolom cari di halaman yang sama. */
+  inputId?: string;
 }) {
   return (
     <form action="/cari" role="search" className={`relative ${className}`}>
-      <label htmlFor="cari-q" className="sr-only">
+      <label htmlFor={inputId} className="sr-only">
         Cari barang
       </label>
       <Search
@@ -22,7 +25,7 @@ export function SearchForm({
         className="pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-tinta-pudar"
       />
       <input
-        id="cari-q"
+        id={inputId}
         name="q"
         type="search"
         defaultValue={defaultValue}

@@ -5,8 +5,8 @@ import { CATEGORIES } from "@/lib/categories";
 export function SiteFooter() {
   return (
     <footer className="mt-auto bg-tinta text-kertas">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-12 lg:grid-cols-4">
+        <div className="col-span-2 lg:col-span-1">
           <Image
             src="/brand/lungsur-wordmark-terang.svg"
             alt="lungsur."

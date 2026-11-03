@@ -40,7 +40,7 @@ export function MobileMenu() {
           id="menu-hp"
           className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto border-t border-garis bg-kertas px-4 py-5"
         >
-          <SearchForm autoFocus />
+          <SearchForm inputId="cari-menu" autoFocus />
           <nav aria-label="Menu" className="mt-6 flex flex-col gap-1 text-lg font-bold">
             <Link
               href="/jual"

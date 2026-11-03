@@ -8,43 +8,9 @@ import { CategoryIcon } from "./category-icon";
 import { MobileMenu } from "./mobile-menu";
 import { SearchForm } from "./search-form";
 
-const POPULAR_SEARCHES = [
-  "kalkulator",
-  "kipas angin",
-  "buku kalkulus",
-  "jas lab",
-  "rice cooker",
-];
-
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-garis bg-kertas">
-      {/* Baris atas: pencarian populer */}
-      <div className="hidden border-b border-garis md:block">
-        <div className="mx-auto flex h-9 max-w-6xl items-center justify-between gap-6 px-4 text-[13px]">
-          <nav aria-label="Pencarian populer" className="flex min-w-0 items-center gap-1">
-            <span className="mr-1 shrink-0 text-tinta-pudar">Lagi dicari:</span>
-            {POPULAR_SEARCHES.map((q) => (
-              <Link
-                key={q}
-                href={`/cari?q=${encodeURIComponent(q)}`}
-                className="shrink-0 rounded-full px-2 py-0.5 font-bold hover:bg-kardus"
-              >
-                {q}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex shrink-0 items-center gap-4 font-bold">
-            <Link href="/#cara-kerja" className="hover:underline">
-              Cara kerja
-            </Link>
-            <Link href="/#aman" className="hover:underline">
-              Aturan barang
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* Baris utama */}
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:gap-6">
         <MobileMenu />
@@ -57,7 +23,7 @@ export function SiteHeader() {
             priority
           />
         </Link>
-        <SearchForm className="hidden flex-1 md:block" />
+        <SearchForm inputId="cari-header" className="hidden flex-1 md:block" />
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <Link
             href="/jual"
