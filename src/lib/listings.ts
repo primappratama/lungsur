@@ -1,9 +1,11 @@
 import "server-only";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import { connection } from "next/server";
 import { getDb } from "@/db";
 import { categories, listings, profiles } from "@/db/schema";
-import { SAMPLE_LISTINGS } from "./sample-listings";
+import { DEMO_IMAGES, SAMPLE_LISTINGS } from "./sample-listings";
 
 export type Condition = "like_new" | "used" | "defect";
 
@@ -27,6 +29,30 @@ export type ListingResult = {
 
 export function isDatabaseConfigured() {
   return Boolean(process.env.DATABASE_URL);
+}
+
+/**
+ * Mode demo buat screenshot porto: kartu contoh tampil kayak barang beneran
+ * (tanpa label "contoh"), pakai foto di public/demo/. Database nggak disentuh.
+ * Cuma nyala kalau LUNGSUR_DEMO=1. Jangan pernah dinyalain di production.
+ */
+export function isDemoMode() {
+  return process.env.LUNGSUR_DEMO === "1";
+}
+
+function demoListings(): ListingCardData[] {
+  return SAMPLE_LISTINGS.map((item) => {
+    const file = DEMO_IMAGES[item.id];
+    const found = file && existsSync(path.join(process.cwd(), "public", "demo", file));
+    return { ...item, imageUrl: found ? `/demo/${file}` : null };
+  });
+}
+
+/** Sumber kartu kalau nggak baca database: demo atau contoh berlabel. */
+function offlineSource(): ListingResult {
+  return isDemoMode()
+    ? { items: demoListings(), sample: false }
+    : { items: SAMPLE_LISTINGS, sample: true };
 }
 
 /** URL publik foto di bucket Storage `listing-images`. */
@@ -88,8 +114,9 @@ async function queryListings(where: SQL[], limit: number) {
 
 export async function getLatestListings(limit = 8): Promise<ListingResult> {
   await connection();
-  if (!isDatabaseConfigured()) {
-    return { items: SAMPLE_LISTINGS.slice(0, limit), sample: true };
+  if (isDemoMode() || !isDatabaseConfigured()) {
+    const { items, sample } = offlineSource();
+    return { items: items.slice(0, limit), sample };
   }
   return { items: await queryListings([], limit), sample: false };
 }
@@ -106,14 +133,15 @@ export async function searchListings({
   await connection();
   const query = q ? toPrefixQuery(q) : null;
 
-  if (!isDatabaseConfigured()) {
+  if (isDemoMode() || !isDatabaseConfigured()) {
+    const { items: all, sample } = offlineSource();
     const words = query ? query.replace(/:\*/g, "").split(" & ") : [];
-    const items = SAMPLE_LISTINGS.filter(
+    const items = all.filter(
       (l) =>
         (!category || l.categorySlug === category) &&
         words.every((w) => l.title.toLowerCase().includes(w)),
     );
-    return { items, sample: true };
+    return { items, sample };
   }
 
   const where: SQL[] = [];

@@ -20,6 +20,9 @@
 # production
 /build
 
+# demo photos for portfolio screenshots (stock photos, not ours to redistribute)
+/public/demo/
+
 # misc
 .DS_Store
 *.pem

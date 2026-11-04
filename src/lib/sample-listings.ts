@@ -1,8 +1,8 @@
 import type { ListingCardData } from "./listings";
 
 /**
- * Kartu contoh, cuma tampil kalau DATABASE_URL belum diisi.
- * Selalu dikasih label "contoh" di UI. Jangan dipakai buat production.
+ * Kartu contoh. Tampil berlabel "contoh" kalau DATABASE_URL belum diisi,
+ * atau tanpa label di mode demo (LUNGSUR_DEMO=1). Jangan dipakai buat production.
  */
 export const SAMPLE_LISTINGS: ListingCardData[] = [
   {
@@ -94,3 +94,15 @@ export const SAMPLE_LISTINGS: ListingCardData[] = [
     imageUrl: null,
   },
 ];
+
+/** Foto mode demo, ditaruh di public/demo/ (folder itu nggak ikut ke git). */
+export const DEMO_IMAGES: Record<string, string> = {
+  "contoh-1": "kalkulator.jpg",
+  "contoh-2": "buku.jpg",
+  "contoh-3": "kipas.jpg",
+  "contoh-4": "jas-lab.jpg",
+  "contoh-5": "rice-cooker.jpg",
+  "contoh-6": "headphone.jpg",
+  "contoh-7": "kemeja-flanel.jpg",
+  "contoh-8": "raket.jpg",
+};
