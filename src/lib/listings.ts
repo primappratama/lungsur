@@ -5,7 +5,7 @@ import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import { connection } from "next/server";
 import { getDb } from "@/db";
 import { categories, listings, profiles } from "@/db/schema";
-import { DEMO_IMAGES, SAMPLE_LISTINGS } from "./sample-listings";
+import { DEMO_LISTINGS, SAMPLE_LISTINGS } from "./sample-listings";
 
 export type Condition = "like_new" | "used" | "defect";
 
@@ -41,10 +41,9 @@ export function isDemoMode() {
 }
 
 function demoListings(): ListingCardData[] {
-  return SAMPLE_LISTINGS.map((item) => {
-    const file = DEMO_IMAGES[item.id];
-    const found = file && existsSync(path.join(process.cwd(), "public", "demo", file));
-    return { ...item, imageUrl: found ? `/demo/${file}` : null };
+  return DEMO_LISTINGS.map(({ image, ...item }) => {
+    const found = existsSync(path.join(process.cwd(), "public", "demo", image));
+    return { ...item, imageUrl: found ? `/demo/${image}` : null };
   });
 }
 

@@ -95,14 +95,83 @@ export const SAMPLE_LISTINGS: ListingCardData[] = [
   },
 ];
 
-/** Foto mode demo, ditaruh di public/demo/ (folder itu nggak ikut ke git). */
-export const DEMO_IMAGES: Record<string, string> = {
-  "contoh-1": "kalkulator.jpg",
-  "contoh-2": "buku.jpg",
-  "contoh-3": "kipas.jpg",
-  "contoh-4": "jas-lab.jpg",
-  "contoh-5": "rice-cooker.jpg",
-  "contoh-6": "headphone.jpg",
-  "contoh-7": "kemeja-flanel.jpg",
-  "contoh-8": "raket.jpg",
-};
+type DemoListing = ListingCardData & { image: string };
+
+/**
+ * Barang buat mode demo (screenshot porto). Fotonya ditaruh di public/demo/,
+ * folder itu nggak ikut ke git. Foto yang nggak ada → kartu pakai ikon.
+ */
+export const DEMO_LISTINGS: DemoListing[] = [
+  {
+    id: "demo-1",
+    title: "Kemeja flanel kotak merah, size L",
+    price: 65000,
+    condition: "like_new",
+    meetupPoint: "Gerbang depan UMMI",
+    categorySlug: "fashion",
+    categoryName: "Fashion",
+    sellerVerified: true,
+    imageUrl: null,
+    image: "kemeja-flanel.jpg",
+  },
+  {
+    id: "demo-2",
+    title: "Sneakers rajut hitam, size 42",
+    price: 350000,
+    condition: "used",
+    meetupPoint: "Kantin kampus",
+    categorySlug: "fashion",
+    categoryName: "Fashion",
+    sellerVerified: true,
+    imageUrl: null,
+    image: "sneakers.jpg",
+  },
+  {
+    id: "demo-3",
+    title: "Jaket hitam list merah, kancing tali, size M",
+    price: 140000,
+    condition: "like_new",
+    meetupPoint: "Masjid kampus",
+    categorySlug: "fashion",
+    categoryName: "Fashion",
+    sellerVerified: false,
+    imageUrl: null,
+    image: "jaket-list-merah.jpg",
+  },
+  {
+    id: "demo-4",
+    title: "Jaket racing bomber hitam, size XL",
+    price: 185000,
+    condition: "used",
+    meetupPoint: "Lab Fakultas Teknik",
+    categorySlug: "fashion",
+    categoryName: "Fashion",
+    sellerVerified: true,
+    imageUrl: null,
+    image: "jaket-racing.jpg",
+  },
+  {
+    id: "demo-5",
+    title: "Jaket zip hitam list reflektif, size L",
+    price: 160000,
+    condition: "used",
+    meetupPoint: "Perpustakaan UMMI",
+    categorySlug: "fashion",
+    categoryName: "Fashion",
+    sellerVerified: false,
+    imageUrl: null,
+    image: "jaket-reflektif.jpg",
+  },
+  {
+    id: "demo-6",
+    title: "iPhone 15 Pro 128 GB + case MagSafe",
+    price: 10500000,
+    condition: "used",
+    meetupPoint: "Gerbang depan UMMI",
+    categorySlug: "elektronik",
+    categoryName: "Elektronik & gadget",
+    sellerVerified: true,
+    imageUrl: null,
+    image: "iphone.jpg",
+  },
+];
