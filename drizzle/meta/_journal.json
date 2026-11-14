@@ -15,6 +15,20 @@
       "when": 1793375411884,
       "tag": "0001_seed_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794619414213,
+      "tag": "0002_profile_whatsapp",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794619415062,
+      "tag": "0003_listing_images_bucket",
+      "breakpoints": true
     }
   ]
 }

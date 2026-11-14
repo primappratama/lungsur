@@ -16,6 +16,18 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   // Tandai sebagai data per-request, biar nggak ikut di-prerender jadi halaman statis
   // walaupun env Supabase belum ada pas build.
   await connection();
+  return loadProfile();
+}
+
+/**
+ * Versi buat Server Action: sama-sama baca sesi dari cookie, tanpa connection()
+ * yang cuma relevan waktu render halaman.
+ */
+export async function getActionProfile(): Promise<Profile | null> {
+  return loadProfile();
+}
+
+async function loadProfile(): Promise<Profile | null> {
   if (!isSupabaseConfigured()) return null;
 
   const supabase = await createClient();

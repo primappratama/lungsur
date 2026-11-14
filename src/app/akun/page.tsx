@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Suspense } from "react";
 import { CampusBadge } from "@/components/campus-badge";
@@ -9,10 +10,12 @@ import { getDb } from "@/db";
 import { listings } from "@/db/schema";
 import { requireProfile } from "@/lib/auth";
 import { listingLimitFor } from "@/lib/campus";
+import { formatRupiah } from "@/lib/format";
+import { getMyListings, type MyListing } from "@/lib/listings";
 
 export const metadata: Metadata = { title: "Akun kamu" };
 
-export default function AccountPage() {
+export default function AccountPage({ searchParams }: PageProps<"/akun">) {
   return (
     <>
       <SiteHeader />
@@ -21,7 +24,7 @@ export default function AccountPage() {
           Akun kamu
         </h1>
         <Suspense fallback={<AccountSkeleton />}>
-          <AccountPanel />
+          <AccountPanel searchParams={searchParams} />
         </Suspense>
       </main>
       <SiteFooter />
@@ -29,8 +32,14 @@ export default function AccountPage() {
   );
 }
 
-async function AccountPanel() {
+async function AccountPanel({
+  searchParams,
+}: {
+  searchParams: PageProps<"/akun">["searchParams"];
+}) {
   const profile = await requireProfile("/akun");
+  const justPosted = (await searchParams).baru === "1";
+  const mine = await getMyListings(profile.id);
   const [{ active }] = await getDb()
     .select({ active: count() })
     .from(listings)
@@ -44,6 +53,12 @@ async function AccountPanel() {
 
   return (
     <div className="mt-6 space-y-4">
+      {justPosted ? (
+        <p role="status" className="rounded-md border border-denim/30 bg-denim-muda p-4 font-bold text-denim">
+          Barang kamu udah tayang. Sekarang tinggal nunggu pembeli chat lewat WhatsApp.
+        </p>
+      ) : null}
+
       <section className="flex items-center gap-4 rounded-md border border-garis bg-kertas-terang p-5">
         {profile.avatarUrl ? (
           <Image
@@ -83,6 +98,8 @@ async function AccountPanel() {
         </p>
       </section>
 
+      <MyListings items={mine} />
+
       <form action="/auth/keluar" method="post">
         <button
           type="submit"
@@ -92,6 +109,52 @@ async function AccountPanel() {
         </button>
       </form>
     </div>
+  );
+}
+
+const STATUS_LABEL: Record<MyListing["status"], string> = {
+  available: "tayang",
+  reserved: "lagi dipesan",
+  sold: "udah laku",
+  hidden: "diturunin moderator",
+};
+
+function MyListings({ items }: { items: MyListing[] }) {
+  return (
+    <section className="rounded-md border border-garis bg-kertas-terang p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-xl leading-7 font-bold">Barang kamu</h2>
+        <Link href="/jual" className="text-sm font-bold text-stiker-tua hover:underline">
+          Pasang barang
+        </Link>
+      </div>
+      {items.length === 0 ? (
+        <p className="mt-2 text-tinta-pudar">Belum ada barang yang kamu pasang.</p>
+      ) : (
+        <ul className="mt-3 divide-y divide-garis">
+          {items.map((item) => (
+            <li key={item.id} className="flex items-center gap-3 py-3">
+              <div className="relative size-14 shrink-0 overflow-hidden rounded-sm bg-kardus">
+                {item.imageUrl ? (
+                  <Image src={item.imageUrl} alt="" fill sizes="56px" className="object-cover" />
+                ) : null}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-bold">{item.title}</p>
+                <p className="text-sm text-tinta-pudar">{formatRupiah(item.price)}</p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  item.status === "available" ? "bg-denim-muda text-denim" : "bg-kardus text-tinta-pudar"
+                }`}
+              >
+                {STATUS_LABEL[item.status]}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

@@ -152,3 +152,34 @@ export async function searchListings({
   }
   return { items: await queryListings(where, limit), sample: false };
 }
+
+export type MyListing = {
+  id: string;
+  title: string;
+  price: number;
+  status: "available" | "reserved" | "sold" | "hidden";
+  createdAt: Date;
+  imageUrl: string | null;
+};
+
+/** Semua barang milik satu penjual, termasuk yang udah laku atau diturunin. */
+export async function getMyListings(sellerId: string): Promise<MyListing[]> {
+  const rows = await getDb()
+    .select({
+      id: listings.id,
+      title: listings.title,
+      price: listings.price,
+      status: listings.status,
+      createdAt: listings.createdAt,
+      imagePath: sql<string | null>`(
+        select li.path from listing_images li
+        where li.listing_id = ${listings.id}
+        order by li.position limit 1
+      )`,
+    })
+    .from(listings)
+    .where(eq(listings.sellerId, sellerId))
+    .orderBy(desc(listings.createdAt));
+
+  return rows.map(({ imagePath, ...r }) => ({ ...r, imageUrl: imageUrl(imagePath) }));
+}

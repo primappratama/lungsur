@@ -123,8 +123,8 @@ function HowItWorks() {
       body: "Foto, tulis kondisinya jujur (mulus, minus pemakaian, atau ada cacat), terus pilih titik temu di kampus.",
     },
     {
-      title: "Ngobrol lewat chat",
-      body: `Nego lewat chat lungsur, nomor WA kamu nggak dipajang. Login pakai email .ac.id dapet badge terverifikasi, ${LISTING_LIMIT.verified} slot listing, dan naikin listing gratis.`,
+      title: "Ngobrol lewat WhatsApp",
+      body: `Pembeli chat dan nego langsung lewat tombol WhatsApp. Nomormu cuma kelihatan buat yang udah login. Login pakai email .ac.id dapet badge terverifikasi, ${LISTING_LIMIT.verified} slot listing, dan naikin listing gratis.`,
     },
     {
       title: "Ketemu, COD, beres",

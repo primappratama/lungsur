@@ -75,6 +75,11 @@ export const profiles = pgTable(
     campusDomain: text("campus_domain"),
     /** Terisi = badge "terverifikasi kampus" aktif. */
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    /**
+     * Nomor WA penjual, format 628xxxx. Diisi waktu pertama kali pasang barang.
+     * Cuma ditunjukin ke pembeli yang udah login.
+     */
+    whatsapp: text("whatsapp"),
     blockedAt: timestamp("blocked_at", { withTimezone: true }),
     ...timestamps,
   },
