@@ -128,13 +128,16 @@ export function SellForm({
     setErrors((e) => ({ ...e, [key]: next[key] }));
   }
 
-  async function addFiles(files: FileList | null) {
-    if (!files?.length) return;
+  async function addFiles(files: FileList | File[] | null) {
+    if (!files?.length || busy || compressing) return;
+    const all = Array.from(files);
+    const images = all.filter((f) => f.type.startsWith("image/"));
     const room = LISTING_RULES.photos.max - photos.length;
-    const picked = Array.from(files).slice(0, room);
+    const picked = images.slice(0, room);
     setCompressing(true);
     const added: Photo[] = [];
-    let problem: string | undefined;
+    let problem: string | undefined =
+      images.length < all.length ? "Cuma file gambar yang bisa dipakai (JPG, PNG, WebP)." : undefined;
     for (const file of picked) {
       try {
         const img = await compressImage(file);
@@ -143,7 +146,7 @@ export function SellForm({
         problem = err instanceof ImageReadError ? err.message : `${file.name} gagal diproses.`;
       }
     }
-    if (files.length > room) {
+    if (images.length > room) {
       problem = `Maksimal ${LISTING_RULES.photos.max} foto. Sisanya nggak dimasukin.`;
     }
     setPhotos((p) => [...p, ...added]);
@@ -151,6 +154,53 @@ export function SellForm({
     setCompressing(false);
     if (fileInput.current) fileInput.current.value = "";
   }
+
+  // Seret & lepas foto. Hitungan kedalaman biar highlight nggak kedip
+  // waktu kursor lewat di atas elemen anak (thumbnail, tombol).
+  const [dragOver, setDragOver] = useState(false);
+  const dragDepth = useRef(0);
+  const hasFiles = (e: React.DragEvent | DragEvent) =>
+    Array.from(e.dataTransfer?.types ?? []).includes("Files");
+
+  const dropZone = {
+    onDragEnter: (e: React.DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      dragDepth.current += 1;
+      setDragOver(true);
+    },
+    onDragOver: (e: React.DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = busy ? "none" : "copy";
+    },
+    onDragLeave: (e: React.DragEvent) => {
+      if (!hasFiles(e)) return;
+      dragDepth.current = Math.max(0, dragDepth.current - 1);
+      if (dragDepth.current === 0) setDragOver(false);
+    },
+    onDrop: (e: React.DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      dragDepth.current = 0;
+      setDragOver(false);
+      addFiles(e.dataTransfer.files);
+    },
+  };
+
+  // File yang kelepas di luar kotak foto jangan sampai dibuka browser
+  // (pindah halaman = isian form hilang).
+  useEffect(() => {
+    const block = (e: DragEvent) => {
+      if (hasFiles(e)) e.preventDefault();
+    };
+    window.addEventListener("dragover", block);
+    window.addEventListener("drop", block);
+    return () => {
+      window.removeEventListener("dragover", block);
+      window.removeEventListener("drop", block);
+    };
+  }, []);
 
   function removePhoto(key: string) {
     setPhotos((list) => {
@@ -255,63 +305,83 @@ export function SellForm({
       ) : null}
 
       {/* Foto */}
-      <fieldset aria-describedby={id("photos-help")}>
+      <fieldset aria-describedby={id("photos-help")} {...dropZone}>
         <legend className="font-bold">Foto barang</legend>
         <p id={id("photos-help")} className="mt-0.5 text-sm text-tinta-pudar">
           1–{LISTING_RULES.photos.max} foto asli. Foto pertama jadi sampul. Kalau ada minus, fotoin juga.
+          <span className="hidden pointer-fine:inline"> Bisa juga seret file fotonya ke sini.</span>
         </p>
-        <ul className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {photos.map((p, i) => (
-            <li key={p.key} className="group relative aspect-square overflow-hidden rounded-md border border-garis bg-kardus">
-              {/* eslint-disable-next-line @next/next/no-img-element -- preview lokal dari blob */}
-              <img src={p.previewUrl} alt={`Foto ${i + 1}`} className="size-full object-cover" />
-              {i === 0 ? (
-                <span className="absolute bottom-1 left-1 rounded-full bg-tinta px-2 py-0.5 text-[11px] font-bold text-kertas-terang">
-                  sampul
-                </span>
-              ) : (
+        <div
+          className={`relative mt-3 rounded-md transition-colors ${
+            dragOver ? "bg-denim-muda/60 outline-2 outline-offset-4 outline-dashed outline-denim" : ""
+          }`}
+        >
+          {dragOver ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-md bg-denim-muda/85"
+            >
+              <span className="flex items-center gap-2 font-bold text-denim">
+                <ImagePlus className="size-5" />
+                {photos.length >= LISTING_RULES.photos.max
+                  ? `Udah ${LISTING_RULES.photos.max} foto, hapus dulu salah satu`
+                  : "Lepas fotonya di sini"}
+              </span>
+            </div>
+          ) : null}
+          <ul className="grid min-h-28 grid-cols-3 gap-2 sm:grid-cols-5">
+            {photos.map((p, i) => (
+              <li key={p.key} className="group relative aspect-square overflow-hidden rounded-md border border-garis bg-kardus">
+                {/* eslint-disable-next-line @next/next/no-img-element -- preview lokal dari blob */}
+                <img src={p.previewUrl} alt={`Foto ${i + 1}`} className="size-full object-cover" />
+                {i === 0 ? (
+                  <span className="absolute bottom-1 left-1 rounded-full bg-tinta px-2 py-0.5 text-[11px] font-bold text-kertas-terang">
+                    sampul
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => makeCover(p.key)}
+                    disabled={busy}
+                    className="absolute bottom-1 left-1 inline-flex items-center gap-1 rounded-full bg-kertas-terang/90 px-2 py-0.5 text-[11px] font-bold"
+                  >
+                    <Star aria-hidden className="size-3" /> jadiin sampul
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => makeCover(p.key)}
+                  onClick={() => removePhoto(p.key)}
                   disabled={busy}
-                  className="absolute bottom-1 left-1 inline-flex items-center gap-1 rounded-full bg-kertas-terang/90 px-2 py-0.5 text-[11px] font-bold"
+                  aria-label={`Hapus foto ${i + 1}`}
+                  className="absolute top-1 right-1 grid size-7 place-items-center rounded-full bg-tinta/80 text-kertas-terang hover:bg-tinta"
                 >
-                  <Star aria-hidden className="size-3" /> jadiin sampul
+                  <X aria-hidden className="size-4" />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => removePhoto(p.key)}
-                disabled={busy}
-                aria-label={`Hapus foto ${i + 1}`}
-                className="absolute top-1 right-1 grid size-7 place-items-center rounded-full bg-tinta/80 text-kertas-terang hover:bg-tinta"
-              >
-                <X aria-hidden className="size-4" />
-              </button>
-            </li>
-          ))}
-          {photos.length < LISTING_RULES.photos.max ? (
-            <li>
-              <button
-                id={id("photos")}
-                type="button"
-                onClick={() => fileInput.current?.click()}
-                disabled={busy || compressing}
-                aria-describedby={errors.photos ? id("photos-error") : undefined}
-                className={`grid aspect-square w-full place-items-center rounded-md border-2 border-dashed text-tinta-pudar hover:border-tinta hover:text-tinta ${errors.photos ? "border-galat" : "border-garis-tegas"}`}
-              >
-                <span className="flex flex-col items-center gap-1 text-sm font-bold">
-                  {compressing ? (
-                    <Loader2 aria-hidden className="size-6 animate-spin" />
-                  ) : (
-                    <ImagePlus aria-hidden className="size-6" />
-                  )}
-                  {compressing ? "Ngolah…" : "Tambah foto"}
-                </span>
-              </button>
-            </li>
-          ) : null}
-        </ul>
+              </li>
+            ))}
+            {photos.length < LISTING_RULES.photos.max ? (
+              <li>
+                <button
+                  id={id("photos")}
+                  type="button"
+                  onClick={() => fileInput.current?.click()}
+                  disabled={busy || compressing}
+                  aria-describedby={errors.photos ? id("photos-error") : undefined}
+                  className={`grid aspect-square w-full place-items-center rounded-md border-2 border-dashed text-tinta-pudar hover:border-tinta hover:text-tinta ${errors.photos ? "border-galat" : "border-garis-tegas"}`}
+                >
+                  <span className="flex flex-col items-center gap-1 text-sm font-bold">
+                    {compressing ? (
+                      <Loader2 aria-hidden className="size-6 animate-spin" />
+                    ) : (
+                      <ImagePlus aria-hidden className="size-6" />
+                    )}
+                    {compressing ? "Ngolah…" : "Tambah foto"}
+                  </span>
+                </button>
+              </li>
+            ) : null}
+          </ul>
+        </div>
         <input
           ref={fileInput}
           type="file"
